@@ -26,6 +26,9 @@ Int Property Action_Create = 1 autoReadOnly
 Int Property Action_Destroy = 2 autoReadOnly
 Int Property Action_Move = 3 autoReadOnly
 
+int Property iUndoSystemMode_Disabled = 0 autoReadOnly
+int Property iUndoSystemMode_Enabled = 1 autoReadOnly
+int Property iUndoSystemMode_UnpoweredOnly = 2 autoReadOnly
 
 int iTimerID_DoubleCheckDuplicationHolders = 101 Const
 
@@ -67,6 +70,8 @@ Group ActorValues
 	ActorValue Property avLastAngZ Auto Const
 	ActorValue Property avLastScale Auto Const
 	ActorValue Property PowerRequired Auto Const
+	ActorValue Property PowerGenerated Auto Const
+	ActorValue Property WorkshopSnapTransmitsPower Auto Const
 	ActorValue Property LayerIDAV Auto Const
 	{ 1.0.2 - Used to check the layer ID for bulk undo/redo operations }
 	ActorValue Property RecordLayerIDAV Auto Const
@@ -114,6 +119,9 @@ Group Messages
 	Message Property RedoBusy Auto Const Mandatory
 	Message Property RedoMessage Auto Const Mandatory
 	Message Property NothingToRedoMessage Auto Const Mandatory
+	Message Property UndoDisabledExplanation Auto Const Mandatory
+	Message Property UndoNonPowerExplanation Auto Const Mandatory
+	Message Property WSPlus_Confirm_ClearUndoHistory Auto Const Mandatory
 EndGroup
 
 
@@ -122,6 +130,8 @@ Group Settings
 	{ 1.0.2 - Gives the player control for how cloning layer handles works. 0 = Just create on current layer, 1 = Create new layer if possible, 2 = ask me each time }
 	GlobalVariable Property Settings_ShowHotkeyWarnings Auto Const Mandatory
 	{ 1.0.4 }
+	GlobalVariable Property Settings_UndoSystemEnabled Auto Const Mandatory
+	{ 1.0.12 }
 EndGroup
 
 
@@ -436,6 +446,13 @@ EndFunction
 
 
 Function CreateHistory(ObjectReference akObjectRef, Int aiWorkshopID, Int aiActionType)
+	int iUndoSystemMode = Settings_UndoSystemEnabled.GetValueInt()
+	if(iUndoSystemMode == iUndoSystemMode_Disabled)
+		return
+	elseif(iUndoSystemMode == iUndoSystemMode_UnpoweredOnly && IsPowerRelated(akObjectRef))
+		return
+	endif
+	
 	if( ! akObjectRef.HasKeyword(UndoHelperKeyword) && akObjectRef.GetLinkedRef(UndoHelperLinkKeyword) != None)
 		return ; This object is part of an undo helper group - we want them handled by the undo helper
 	endif
@@ -684,6 +701,11 @@ EndFunction
 
 
 Function Undo()
+	if(Settings_UndoSystemEnabled.GetValue() == 0)
+		UndoDisabledExplanation.Show()
+		return
+	endif
+	
 	WorkshopScript thisWorkshop = WorkshopParent.CurrentWorkshop.GetRef() as WorkshopScript
 	
 	if( ! thisWorkshop)
@@ -1189,6 +1211,28 @@ Function AddDuplicatesToLayers()
 EndFunction
 
 
+Function UndoSystemSettingChange(int aiNewValue)
+	if(aiNewValue == iUndoSystemMode_Disabled)
+		int iConfirm = WSPlus_Confirm_ClearUndoHistory.Show()
+		if(iConfirm == 1)
+			ClearHistory()
+		else
+			return
+		endif
+	elseif(aiNewValue == iUndoSystemMode_UnpoweredOnly)
+		UndoNonPowerExplanation.Show()		
+	endif
+	
+	Settings_UndoSystemEnabled.SetValue(aiNewValue)
+EndFunction
+
+Bool Function IsPowerRelated(ObjectReference akCheckRef)
+	if(akCheckRef.HasKeyword(WorkshopCanBePowered) || akCheckRef.HasKeyword(PowerConnection) || akCheckRef.GetBaseValue(PowerGenerated) > 0 || akCheckRef.GetBaseValue(WorkshopSnapTransmitsPower) > 0)
+		return true
+	endif
+	
+	return false
+EndFunction
 
 ; ---------------------------------------------
 ; MCM Functions - Easiest to avoid parameters for use with MCM's CallFunction, also we only want these hotkeys to work in WS mode
