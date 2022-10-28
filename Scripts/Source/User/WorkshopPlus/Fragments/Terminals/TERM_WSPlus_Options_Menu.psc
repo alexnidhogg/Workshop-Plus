@@ -235,6 +235,30 @@ WSPlusMain.ToggleFreeBuildMode(None, true)
 EndFunction
 ;END FRAGMENT
 
+;BEGIN FRAGMENT Fragment_Terminal_30
+Function Fragment_Terminal_30(ObjectReference akTerminalRef)
+;BEGIN CODE
+ActionManager.UndoSystemSettingChange(2)
+;END CODE
+EndFunction
+;END FRAGMENT
+
+;BEGIN FRAGMENT Fragment_Terminal_31
+Function Fragment_Terminal_31(ObjectReference akTerminalRef)
+;BEGIN CODE
+ActionManager.UndoSystemSettingChange(0)
+;END CODE
+EndFunction
+;END FRAGMENT
+
+;BEGIN FRAGMENT Fragment_Terminal_32
+Function Fragment_Terminal_32(ObjectReference akTerminalRef)
+;BEGIN CODE
+ActionManager.UndoSystemSettingChange(1)
+;END CODE
+EndFunction
+;END FRAGMENT
+
 ;END FRAGMENT CODE - Do not edit anything between this and the begin comment
 
 GlobalVariable Property Setting_AutoSaveTimer Auto Const
@@ -257,3 +281,4 @@ GlobalVariable Property Setting_AutoClearWeather Auto Const Mandatory
 
 GlobalVariable Property Setting_FreeBuildAllSettlements Auto Const Mandatory
 WorkshopPlus:MainQuest Property WSPlusMain Auto Const Mandatory
+WorkshopPlus:ActionManager Property ActionManager Auto Const Mandatory

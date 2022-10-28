@@ -79,7 +79,8 @@ EndGroup
 
 Group ActorValues
 	ActorValue Property FallingDamageMod Auto Const Mandatory
-	{ Autofill }	
+	{ Autofill }
+	ActorValue Property Rads Auto Const Mandatory
 EndGroup
 
 Group Keywords
@@ -509,7 +510,11 @@ Function EnableFlight()
 		LastKnownRace = PlayerRef.GetRace()
 	endif
 	
-	if(WorkshopFramework:WSFW_API.IsPlayerInWorkshopMode() && PlayerRef.GetRace() == LastKnownRace)
+	; 1.0.12 - Removing the IsPlayerInWorkshopMode check as it can very easily get out of sync
+	if(PlayerRef.GetRace() == LastKnownRace)
+		int iRadsToHeal = (PlayerRef.GetValue(Rads) as int)
+		PlayerRef.RestoreValue(Rads, iRadsToHeal)
+		
 		Game.ForceFirstPerson()
 		PlayerRef.SetRace(FloatingRace)
 		PlayerFootsteps.Mute()
