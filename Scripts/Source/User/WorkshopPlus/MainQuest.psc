@@ -955,6 +955,6 @@ EndFunction
 ; Added 1.0.4
 Function ShowHotkeyWarning()
 	if(Settings_ShowHotkeyWarnings.GetValue() == 1.0)
-		ShowHotkeyWarning()
+		MustBeInWorkshopModeToUseHotkeys.Show()
 	endif
 EndFunction
