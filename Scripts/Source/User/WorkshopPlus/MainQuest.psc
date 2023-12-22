@@ -494,6 +494,8 @@ Function UnfreezeTime()
 		endif
 	endif
 	
+	fPreviousTimeScale = 0.0 ; Clear this out so UnfreezeTime stops trying to control TimeScale
+	
 	PlayerRef.DispelSpell(FreezeTimeSpell)
 	
 	bTimeFrozen = false
