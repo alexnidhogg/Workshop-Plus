@@ -633,7 +633,7 @@ Function DecreaseSpeed()
 EndFunction
 
 
-Float Property fTemporaryFalldamageReduction = 0.0 Auto 
+Float Property fTemporaryFalldamageReduction = 0.0 Auto Hidden
 Bool bAdjustingFallDamageAV = false
 Function PreventFallDamage()
 	if(bAdjustingFallDamageAV)
