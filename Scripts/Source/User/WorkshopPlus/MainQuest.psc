@@ -683,6 +683,7 @@ Function AllowFallDamage()
 EndFunction
 
 
+
 Function ExitWorkshopModeAndSave(Bool abAutoSave = true)
 	WorkshopScript thisWorkshop
 	if(WorkshopFramework:WSFW_API.IsPlayerInWorkshopMode())
