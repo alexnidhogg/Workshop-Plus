@@ -633,7 +633,7 @@ Function DecreaseSpeed()
 EndFunction
 
 
-Float Property fTemporaryFalldamageReduction = 0.0 Auto Hidden
+Float Property fTemporaryFalldamageReduction = 0.0 Auto 
 Bool bAdjustingFallDamageAV = false
 Function PreventFallDamage()
 	if(bAdjustingFallDamageAV)
@@ -642,30 +642,22 @@ Function PreventFallDamage()
 	
 	bAdjustingFallDamageAV = true
 	
-	if( ! PlayerRef.HasMagicEffect(ArmorFallingEffect))
-		PlayerRef.AddPerk(ModFallingDamage)
-		Float fBaseValue = PlayerRef.GetBaseValue(FallingDamageMod)
-		
-		if(fBaseValue < 100) ; Need to make sure we push this AV's Max up to at least 100
-			PlayerRef.SetValue(FallingDamageMod, 100.0 - fBaseValue)
+	Float fBaseValue = PlayerRef.GetBaseValue(FallingDamageMod)
+	Float fValue = PlayerRef.GetValue(FallingDamageMod)
+	Float fAdjustment = 0.0
+	
+	if(fValue < 100)
+		if(fTemporaryFalldamageReduction > 0)
+			fAdjustment = 100 - fValue
+			fTemporaryFalldamageReduction = fTemporaryFalldamageReduction + fAdjustment
 		else
-			; We'll just mod up by 100 to make sure the actual value, and not just base value is high
-			PlayerRef.ModValue(FallingDamageMod, 100.0) 
+			fTemporaryFalldamageReduction = 100.0 - fValue
 		endif
-	else
-		Float fBaseValue = PlayerRef.GetBaseValue(FallingDamageMod)
-		Float fValue = PlayerRef.GetValue(FallingDamageMod)
 		
-		if(fValue < 100)
-			if(fTemporaryFalldamageReduction > 0)
-				fTemporaryFalldamageReduction = 100.0 - fTemporaryFalldamageReduction - fValue
-			else
-				fTemporaryFalldamageReduction = 100.0 - fValue
-			endif
-			
-			if(fTemporaryFalldamageReduction > 0)
-				PlayerRef.ModValue(FallingDamageMod, fTemporaryFalldamageReduction)
-			endif
+		if(fAdjustment > 0)
+			PlayerRef.ModValue(FallingDamageMod, fAdjustment)
+		elseif(fTemporaryFalldamageReduction > 0)
+			PlayerRef.ModValue(FallingDamageMod, fTemporaryFalldamageReduction)
 		endif
 	endif
 	
@@ -681,15 +673,7 @@ Function AllowFallDamage()
 	
 	bAdjustingFallDamageAV = true
 	
-	if( ! PlayerRef.HasMagicEffect(ArmorFallingEffect))
-		Float fFDMod = PlayerRef.GetValue(FallingDamageMod)
-				
-		if(fFDMod < 0)
-			fFDMod = 0
-		endif
-		
-		PlayerRef.ModValue(FallingDamageMod, (-1 * (fFDMod)))
-	elseif(fTemporaryFalldamageReduction > 0)
+	if(fTemporaryFalldamageReduction > 0)
 		PlayerRef.ModValue(FallingDamageMod, (-1 * fTemporaryFalldamageReduction))
 		
 		fTemporaryFalldamageReduction = 0.0
